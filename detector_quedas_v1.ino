@@ -14,10 +14,7 @@
 const int MPU_addr=0x68; //Endereço do sensor
 int16_t AcX,AcY,AcZ,Tmp,GyX,GyY,GyZ; //Variaveis para pegar os valores medidos
 
-int queda = 0;    //Define queda como não no inicio do programa
-int help = 0;     //Define help como não no inicio do programa
-
-//Programa Setup (DEFINIÇÕES)
+//Programa Setup
 void setup(){
   Wire.begin(); //Inicia a comunicação I2C
   Wire.beginTransmission(MPU_addr); //Começa a transmissao de dados para o sensor
@@ -28,8 +25,6 @@ void setup(){
   pinMode (pinoLEDyellow, OUTPUT);
   pinMode (pinoLEDred, OUTPUT);
   pinMode(buzzer, OUTPUT);
-  pinMode(dismissButom, INPUT);
-  pinMode(helpButom, INPUT);
 
   Serial.begin(9600); //Inicia a comunicaçao serial (para exibir os valores lidos)
 }
@@ -52,23 +47,7 @@ void detectaQueda(int magnitudeBase, magnitudeMedida){
   delay(333); //Aguarda para seguir com o programa
 }
 
-void aguardaHelp(){
-
-}
-
-void chamaajuda(){
-
-}
-
-void avisoQueda(){
-
-}
-
-
-
-
-
-//Programa Loop (PRINCIPAL)
+//Programa Loop
 void loop(){
   Wire.beginTransmission(MPU_addr); //Começa a transmissao de dados para o sensor
   Wire.write(0x3B); // registrador dos dados medidos (ACCEL_XOUT_H)
@@ -82,7 +61,7 @@ void loop(){
   GyY=Wire.read()<<8|Wire.read(); // 0x45 (GYRO_YOUT_H) & 0x46 (GYRO_YOUT_L)
   GyZ=Wire.read()<<8|Wire.read(); // 0x47 (GYRO_ZOUT_H) & 0x48 (GYRO_ZOUT_L)
 
-  magnitude=sqrt(pow(AcX, 2)+pow(AcY, 2)+pow(AcZ, 2))     //Define a magnitude da queda não importando a direção
+  magnitude=sqrt(pow(AcX, 2)+pow(AcY, 2)+pow(AcZ, 2))
 
   //Agora escreve os valores no monitor serial
   Serial.print("AcX = "); Serial.print(AcX);
