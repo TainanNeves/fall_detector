@@ -84,10 +84,11 @@ void loop(){
   Serial.print(" | Tmp = "); Serial.print(Tmp/340.00+36.53); //Equação da temperatura em Cº de acordo com o datasheet
   Serial.print(" | GyX = "); Serial.print(GyX);
   Serial.print(" | GyY = "); Serial.print(GyY);
-  Serial.print(" | GyZ = "); unsigned long tempoAtual = millis();
+  Serial.print(" | GyZ = "); Serial.println(GyZ);
 
   if (AcZ > 20000 || AcY > 15000 || AcX > 10000 || AcZ < -15000 || AcY  < -15000 || AcZ < -25000) {
    for (int i = 0; i <= 5; i++) {
+    Serial.println("Houve uma possível queda, talvez precise chamar ajuda");
     piscarLEDsBuzzer();
   }
 
