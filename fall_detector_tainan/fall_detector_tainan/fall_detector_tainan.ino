@@ -40,44 +40,6 @@ void setup(){
 
 //Funcoes auxiliares
 
-void piscarLEDsBuzzer() {
-  unsigned long tempoAtual = millis(); //ESTE COMANDO MOSTRA A QUANTIDADE DE MILISEGUNDOS QUE O ARDUINO ESTA LIGADO, REINICIA EM MEDIA A CADA 50 DIAS.
-                                        // PRECISAMOS DISTO??
-  while(tempoAtual <= tempoLimite){
-
-    // Acende o LED 1 e ativa o buzzer
-  digitalWrite(pinoLED1, HIGH);
-  digitalWrite(buzzer, HIGH);
-  delay(500);
-
-  // Apaga o LED 1 e desativa o buzzer
-  digitalWrite(pinoLED1, LOW);
-  digitalWrite(buzzer, LOW);
-  delay(500);
-
-  // Acende o LED 2
-  digitalWrite(pinoLED2, HIGH);
-  delay(500);
-
-  // Apaga o LED 2
-  digitalWrite(pinoLED2, LOW);
-  delay(500);
-
-  // Requisição de ajuda ou dispensa deve ficar em um loop. Se não o paciente tem que ficar apertando no momento exato. CONCERTAR
-  if(ajuda != HIGH){ //Botões Pull Up
-    Serial.print("preciso de ajuda");
-    break;
-  }
-  if(dispensa != HIGH){  //Botões Pull Up
-    Serial.print("NÃO preciso de ajuda");
-    break;
-  }
-  Serial.print("preciso de ajuda");
-  break;
-  }
-  
-}
-
 float medir(){
   Wire.beginTransmission(MPU_addr); //Começa a transmissao de dados para o sensor
   Wire.write(0x3B); // registrador dos dados medidos (ACCEL_XOUT_H)
@@ -115,6 +77,7 @@ int detecta_queda(modulo_aceleracao){
 }
 
 int queda_detectada(){
+  int quer_ajuda = 1;
   //Acende tudo e apita por 5s
   digitalWrite(pinoLED1, HIGH);
   digitalWrite(pinoLED2, HIGH);
@@ -131,7 +94,7 @@ int queda_detectada(){
     digitalWrite(pinoLED2, LOW);
     int dispensa = digitalRead(dispensa);
     if(dispensa != HIGH){
-      queda = 1;
+      quer_ajuda = 0;
       digitalWrite(pinoLED1, LOW);
       digitalWrite(pinoLED2, LOW);
       digitalWrite(buzzer, LOW);
@@ -142,7 +105,7 @@ int queda_detectada(){
     digitalWrite(pinoLED2, HIGH);
     dispensa = digitalRead(dispensa);
     if(dispensa != HIGH){
-      queda = 1;
+      quer_ajuda = 0;
       digitalWrite(pinoLED1, LOW);
       digitalWrite(pinoLED2, LOW);
       digitalWrite(buzzer, LOW);
@@ -153,7 +116,7 @@ int queda_detectada(){
     sleep(200);
     dispensa = digitalRead(dispensa);
     if(dispensa != HIGH){
-      queda = 1;
+      quer_ajuda = 0;
       digitalWrite(pinoLED1, LOW);
       digitalWrite(pinoLED2, LOW);
       digitalWrite(buzzer, LOW);
@@ -164,15 +127,27 @@ int queda_detectada(){
   }
 
   //Retornando se ha queda ou nao
-  return queda;
+  return quer_ajuda;
+}
+
+int avalia_buscar_ajuda(){
+  int ajuda = 0;
+  int help = digitalRead(ajuda);
+  if(help != HIGH){
+    ajuda = 1;
+  }
+
+  return ajuda;
 }
 
 void envia_aviso_queda(){
-
+  serial.Print("Enviando aviso que queda para tutor/responsável"); //Provisório
+  sleep(5000);
 }
 
 void envia_aviso_ajuda(){
-
+  serial.Print("Enviando aviso de pedido de ajuda para tutor/responsável");  //Provisório
+  sleep(5000);
 }
 
 
@@ -188,7 +163,7 @@ void loop(){
       envia_aviso_queda()
     }
   }else{                              //Se não queda
-    int quer_ajuda = buscar_ajuda();
+    int quer_ajuda = avalia_buscar_ajuda();
     if(quer_ajuda == 1){
       envia_aviso_ajuda()
     }
