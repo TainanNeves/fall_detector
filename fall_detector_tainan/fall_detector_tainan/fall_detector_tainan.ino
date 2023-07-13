@@ -11,11 +11,13 @@
 
 //Definições
 #include<Wire.h>//Biblioteca para comunicação I2C
+#include <SoftwareSerial.h>
 #define pinoLED2 7
-#define buzzer 8
+#define dispensa 12
+#define buzzer  8
 #define pinoLED1 10
 #define ajuda 11
-#define dispensa 12
+
 const unsigned long tempoLimite = 10000;
 const int MPU_addr=0x68; //Endereço do sensor
 int16_t AcX,AcY,AcZ,Tmp,GyX,GyY,GyZ; //Variaveis medidas no MPU6050
@@ -66,11 +68,12 @@ float medir(){
   return modulo_aceleracao;
 }
 
-int detecta_queda(modulo_aceleracao){
-  if(modulo_acelercao >= 10000){
-    int queda = 1;                      //queda
+int detecta_queda(float modulo){
+  int queda = 0;
+  if(modulo >= 10000){
+    queda = 1;                      //queda
   }else{
-    int queda = 0;                      //nao queda
+    queda = 0;                      //nao queda
   }
 
   return queda;
@@ -92,38 +95,38 @@ int queda_detectada(){
   while(int t=tempoAtual <= tempoAtual + 15000){
     digitalWrite(pinoLED1, HIGH);
     digitalWrite(pinoLED2, LOW);
-    int dispensa = digitalRead(dispensa);
-    if(dispensa != HIGH){
+    int disp = digitalRead(dispensa);
+    if(disp != HIGH){
       quer_ajuda = 0;
       digitalWrite(pinoLED1, LOW);
       digitalWrite(pinoLED2, LOW);
       digitalWrite(buzzer, LOW);
-      break
+      break;
     }
-    sleep(50);
+    delay(50);
     digitalWrite(pinoLED1, LOW);
     digitalWrite(pinoLED2, HIGH);
-    dispensa = digitalRead(dispensa);
-    if(dispensa != HIGH){
+    disp = digitalRead(dispensa);
+    if(disp != HIGH){
       quer_ajuda = 0;
       digitalWrite(pinoLED1, LOW);
       digitalWrite(pinoLED2, LOW);
       digitalWrite(buzzer, LOW);
-      break
+      break;
     }
-    sleep(50);
+    delay(50);
     digitalWrite(buzzer, HIGH);
-    sleep(200);
-    dispensa = digitalRead(dispensa);
-    if(dispensa != HIGH){
+    delay(200);
+    disp = digitalRead(dispensa);
+    if(disp != HIGH){
       quer_ajuda = 0;
       digitalWrite(pinoLED1, LOW);
       digitalWrite(pinoLED2, LOW);
       digitalWrite(buzzer, LOW);
-      break
+      break;
     }
     digitalWrite(buzzer, LOW);
-    sleep(200);
+    delay(200);
   }
 
   //Retornando se ha queda ou nao
@@ -131,10 +134,10 @@ int queda_detectada(){
 }
 
 int avalia_buscar_ajuda(){
-  int ajuda = 0;
+  int needHelp = 0;
   int help = digitalRead(ajuda);
   if(help != HIGH){
-    ajuda = 1;
+    needHelp = 1;
   }
 
   return ajuda;
@@ -142,30 +145,31 @@ int avalia_buscar_ajuda(){
 
 void envia_aviso_queda(){
   serial.Print("Enviando aviso que queda para tutor/responsável"); //Provisório
-  sleep(5000);
+  delay(5000);
 }
 
 void envia_aviso_ajuda(){
   serial.Print("Enviando aviso de pedido de ajuda para tutor/responsável");  //Provisório
-  sleep(5000);
+  delay(5000);
 }
 
 
 //Programa Principal
 void loop(){
   float modulo_aceleracao = medir();  //Realiza a medida e grava em uma variavel
-  sleep(150);                         //espera 150ms
+  delay(150);                         //espera 150ms
 
+  int queda;
   queda = detecta_queda(modulo_aceleracao);
   if(queda == 1){                     //Se queda
     int confirma_queda = queda_detectada();
     if(confirma_queda == 1){
-      envia_aviso_queda()
+      envia_aviso_queda();
     }
   }else{                              //Se não queda
     int quer_ajuda = avalia_buscar_ajuda();
     if(quer_ajuda == 1){
-      envia_aviso_ajuda()
+      envia_aviso_ajuda();
     }
   }
   
