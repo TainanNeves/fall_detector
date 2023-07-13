@@ -144,12 +144,12 @@ int avalia_buscar_ajuda(){
 }
 
 void envia_aviso_queda(){
-  serial.Print("Enviando aviso que queda para tutor/responsável"); //Provisório
+  Serial.print("Enviando aviso que queda para tutor/responsável"); //Provisório
   delay(5000);
 }
 
 void envia_aviso_ajuda(){
-  serial.Print("Enviando aviso de pedido de ajuda para tutor/responsável");  //Provisório
+  Serial.print("Enviando aviso de pedido de ajuda para tutor/responsável");  //Provisório
   delay(5000);
 }
 
@@ -157,7 +157,7 @@ void envia_aviso_ajuda(){
 //Programa Principal
 void loop(){
   float modulo_aceleracao = medir();  //Realiza a medida e grava em uma variavel
-  delay(150);                         //espera 150ms
+  delay(50);                         //espera 150ms
 
   int queda;
   queda = detecta_queda(modulo_aceleracao);
