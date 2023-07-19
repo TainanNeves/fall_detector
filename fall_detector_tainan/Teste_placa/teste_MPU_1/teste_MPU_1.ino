@@ -11,7 +11,7 @@
 //Objects
 Adafruit_MPU6050 mpu;
 
-void setup() {
+void setup(){
   //Init Serial USB
   Serial.begin(9600);
   Serial.println(F("Initialize System"));
@@ -26,7 +26,7 @@ void setup() {
   mpu.setFilterBandwidth(MPU6050_BAND_21_HZ);
 }
 
-void readMPU( ) { /* function readMPU */
+void readMPU( ){ /* function readMPU */
   ////Read acceleromter data
   sensors_event_t a, g, temp;
   mpu.getEvent(&a, &g, &temp);
@@ -50,7 +50,8 @@ void readMPU( ) { /* function readMPU */
   Serial.println("°C");
 }
 
-void loop() {
-  readMPU();
+void loop(){
+  //readMPU();
   delay(100);
+  Serial.println("Loop");
 }

@@ -15,8 +15,8 @@
 #define pinoLED1 6
 #define pinoLED2 7
 #define buzzer  8
-#define dispensa 11
-#define ajuda 12
+#define dispensa 9
+#define ajuda 10
 
 const unsigned long tempoLimite = 10000;
 const int MPU_addr=0x68; //Endereço do sensor
@@ -29,6 +29,7 @@ void setup(){
   Wire.write(0x6B); // registrador PWR_MGMT_1
   Wire.write(0); // Manda 0 e "acorda" o MPU 6050
   Wire.endTransmission(true);
+
   pinMode(pinoLED1, OUTPUT);
   pinMode(pinoLED2, OUTPUT);
   pinMode(buzzer, OUTPUT);
@@ -140,7 +141,7 @@ int avalia_buscar_ajuda(){
     needHelp = 1;
   }
 
-  return ajuda;
+  return needHelp;
 }
 
 void envia_aviso_queda(){
