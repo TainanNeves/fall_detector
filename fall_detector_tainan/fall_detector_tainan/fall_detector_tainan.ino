@@ -4,19 +4,19 @@
 //Integrantes:
 //  Tainan Cerqueira Neves
 //  Thiago 
-//  
-//  
-//  
+//  nome
+//  nome
+//  nome
 
 
 //Definições
 #include<Wire.h>//Biblioteca para comunicação I2C
 #include <SoftwareSerial.h>
+#define pinoLED1 6
 #define pinoLED2 7
-#define dispensa 12
 #define buzzer  8
-#define pinoLED1 10
-#define ajuda 11
+#define dispensa 11
+#define ajuda 12
 
 const unsigned long tempoLimite = 10000;
 const int MPU_addr=0x68; //Endereço do sensor
@@ -68,9 +68,9 @@ float medir(){
   return modulo_aceleracao;
 }
 
-int detecta_queda(float modulo){
+int detecta_queda(float modulo, int limite){
   int queda = 0;
-  if(modulo >= 10000){
+  if(modulo >= limite){
     queda = 1;                      //queda
   }else{
     queda = 0;                      //nao queda
@@ -160,7 +160,7 @@ void loop(){
   delay(50);                         //espera 150ms
 
   int queda;
-  queda = detecta_queda(modulo_aceleracao);
+  queda = detecta_queda(modulo_aceleracao, 10000);
   if(queda == 1){                     //Se queda
     int confirma_queda = queda_detectada();
     if(confirma_queda == 1){
