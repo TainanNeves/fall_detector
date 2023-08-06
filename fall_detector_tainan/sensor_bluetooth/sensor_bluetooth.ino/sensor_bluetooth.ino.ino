@@ -12,5 +12,5 @@ void loop()
 {
   bluetooth.print("Mensagem enviada via Bluetooth");
   Serial.println("Mensagem no Monitor Serial");
-  delay(200);
+  delay(1000);
 }
