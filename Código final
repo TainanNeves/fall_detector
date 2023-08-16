@@ -1,0 +1,107 @@
+#include "SoftwareSerial.h"
+
+// Definição dos números dos pinos para os vários componentes
+#define ledam 8
+#define ledver 9
+#define buzzer 10
+#define ajuda 7
+#define dispensa 6
+
+#define BT_RX_PIN 11
+#define BT_TX_PIN 12
+
+const int MPU_addr = 0x68; // Endereço I2C do sensor MPU-6050
+float queda; // Variável para armazenar a magnitude calculada da queda
+long tempo; // Variável não utilizada
+
+int16_t AcX, AcY, AcZ, Tmp, GyX, GyY, GyZ; // Variáveis para armazenar leituras do sensor
+
+SoftwareSerial bluetooth(BT_TX_PIN, BT_RX_PIN); // Objeto para comunicação Bluetooth
+
+void setup() {
+  Wire.begin(); // Inicializa a comunicação I2C
+  Wire.beginTransmission(MPU_addr);
+  Wire.write(0x6B); // Registro PWR_MGMT_1
+  Wire.write(0);    // Ativa o sensor (definindo para 0)
+  Wire.endTransmission(true);
+
+  pinMode(ledam, OUTPUT);   // Define os pinos dos LEDs como saídas
+  pinMode(ledver, OUTPUT);
+  pinMode(buzzer, OUTPUT);  // Define o pino do buzzer como saída
+
+  pinMode(ajuda, INPUT);    // Define os pinos dos botões como entradas
+  pinMode(dispensa, INPUT);
+
+  Serial.begin(9600); // Inicializa a comunicação serial para depuração
+
+  bluetooth.begin(9600); // Inicializa a comunicação Bluetooth
+}
+
+void loop() {
+  Wire.beginTransmission(MPU_addr);
+  Wire.write(0x3B); // Registro de início dos dados do sensor
+  Wire.endTransmission(false);
+  Wire.requestFrom(MPU_addr, 14, true); // Solicita 14 bytes de dados
+  AcX = Wire.read() << 8 | Wire.read(); // Lê os dados do acelerômetro
+  AcY = Wire.read() << 8 | Wire.read();
+  AcZ = Wire.read() << 8 | Wire.read();
+  Tmp = Wire.read() << 8 | Wire.read(); // Lê os dados de temperatura
+  GyX = Wire.read() << 8 | Wire.read(); // Lê os dados do giroscópio
+  GyY = Wire.read() << 8 | Wire.read();
+  GyZ = Wire.read() << 8 | Wire.read();
+  delay(100); // Atraso para estabilidade
+
+  // Calcula a magnitude da queda usando leituras do acelerômetro
+  queda = sqrt(pow(AcX, 2) + pow(AcY, 2) + pow(AcZ, 2));
+
+  // Verifica se uma possível queda é detectada
+  if (queda > 40000) {
+    digitalWrite(ledam, HIGH); // Acende LEDs e ativa o buzzer
+    digitalWrite(ledver, HIGH);
+    digitalWrite(buzzer, HIGH);
+    Serial.println("Possível queda detectada."); // Mensagem de depuração
+    bluetooth.println("Possível queda detectada."); // Mensagem Bluetooth
+    unsigned long startTime = millis(); // Inicia um temporizador
+    while (millis() - startTime < 10000) {
+      if (digitalRead(ajuda) == HIGH) { // Se o botão de ajuda for pressionado
+        digitalWrite(ledver, LOW);
+        digitalWrite(ledam, LOW);
+        digitalWrite(buzzer, LOW);
+        Serial.println("Ajuda necessária!");
+        bluetooth.println("Ajuda necessária!");
+        delay(2000);
+        return;
+      }
+      if (digitalRead(dispensa) == HIGH) { // Se o botão de dispensa for pressionado
+        digitalWrite(ledam, LOW);
+        digitalWrite(ledver, LOW);
+        digitalWrite(buzzer, LOW);
+        Serial.println("Ajuda não necessária.");
+        bluetooth.println("Ajuda não necessária!");
+        delay(2000);
+        return;
+      }
+      delay(100);
+      if (millis() - startTime > 10000) { // Se o temporizador expirar
+        Serial.println("Tempo esgotado. Ajuda necessária.");
+        bluetooth.println("Tempo esgotado. Ajuda necessária!");
+        delay(2000);
+      }
+    }
+  }
+
+  // Verifica se o botão de ajuda é pressionado sem detecção de queda
+  if (digitalRead(ajuda) == HIGH) {
+    digitalWrite(ledam, LOW);
+    digitalWrite(ledver, LOW);
+    digitalWrite(buzzer, LOW);
+    Serial.println("Ajuda necessária!");
+    bluetooth.println("Ajuda necessária!");
+    delay(2000);
+  }
+  
+  // Desliga LEDs e o buzzer
+  digitalWrite(ledver, LOW);
+  digitalWrite(ledam, LOW);
+  digitalWrite(buzzer, LOW);
+}
